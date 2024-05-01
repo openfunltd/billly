@@ -1,0 +1,11 @@
+div.dataTables_scrollBody {
+  border-left: 0px !important;
+}
+
+div.filter_adjust {
+  transform: translateY(10%);
+}
+
+table.dataTable thead td {
+  vertical-align: middle;
+}
