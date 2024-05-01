@@ -56,7 +56,7 @@ function renderDataTable(rows) {
     buttons: [
         'pageLength', 'copy', 'excel'
     ],
-    order: [0, 'desc'],
+    order: [1, 'desc'],
   });
 
   table.rows.add(rows).draw(false);
