@@ -11,11 +11,14 @@ async function main(tableId) {
 
   for (bill of bills) {
     releaseDate = bill.mtime.substr(0, 10);
+    hasLawDiff = (bill.對照表 === undefined) ? '❌' : '✅'; 
     proposalID = bill.提案編號 ?? 'No Data';
     proposer = getProposer(bill.提案人, bill['提案單位/提案委員']);
     billName = parseBillName(bill.議案名稱);
-    links = buildLinks(bill.billNo, proposalID);
-    row = [links, releaseDate, proposalID, proposer, billName];
+    lawNames = bill.laws;
+    lawNames = await getLawNames(bill.laws);
+    links = buildLinks(bill.billNo, bill.對照表);
+    row = [links, hasLawDiff, releaseDate, proposalID, proposer, billName, lawNames];
     rows.push(row);
   }
 
