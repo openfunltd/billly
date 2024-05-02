@@ -6,7 +6,8 @@ async function main(tableId) {
 
   const bills_1 = await getLawBills(term, sessionPeriod, '委員提案');
   const bills_2 = await getLawBills(term, sessionPeriod, '政府提案');
-  let bills = bills_1.concat(bills_2);
+  const bills = bills_1.concat(bills_2);
+  const lawNameMap = await getLawNameMap(bills);
   let rows = [];
 
   for (bill of bills) {
@@ -15,8 +16,7 @@ async function main(tableId) {
     proposalID = bill.提案編號 ?? 'No Data';
     proposer = getProposer(bill.提案人, bill['提案單位/提案委員']);
     billName = parseBillName(bill.議案名稱);
-    lawNames = bill.laws;
-    lawNames = await getLawNames(bill.laws);
+    lawNames = buildLawNames(bill.laws, lawNameMap);
     links = buildLinks(bill.billNo, bill.對照表);
     row = [links, hasLawDiff, releaseDate, proposalID, proposer, billName, lawNames];
     rows.push(row);

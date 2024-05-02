@@ -9,14 +9,56 @@ function getLawBills(term, sessionPeriod, proposal_type) {
   });
 }
 
-function getLawNames(laws) {
-  lawNames = '';
-  for (law of laws) {
-    lawNames += ', ';
-    lawNames += `<a href="https://ly.govapi.tw/law/${law}">${law}</a>`
+function getLaws(url) {
+  return new Promise((resolve, reject) => {
+    $.getJSON(url, function(data) {
+      resolve(data.laws);
+    });
+  });
+}
+
+async function getLawNameMap(bills) {
+  lawIds = [];
+  urlBase = 'https://ly.govapi.tw/law?';
+  lawCnt = 0;
+  for (bill of bills) {
+    if (bill.laws === undefined) {
+      continue;
+    }
+    for (law of bill.laws) {
+      if (!lawIds.includes(law)) {
+        lawIds.push(law);
+      }
+    }
   }
-  if (lawNames.length > 0) {
-    return lawNames.substring(2);
+  lawIdsChunk = []
+  chunkSize = 200;
+  for (let i=0; i < lawIds.length; i += chunkSize) {
+    lawIdsChunk.push(lawIds.slice(i, i + chunkSize));
+  }
+  laws = [];
+  for (lawIds of lawIdsChunk) {
+    query = '';
+    for (lawID of lawIds) {
+      query += `&id=${lawID}`;
+    }
+    const url = urlBase + query.substring(1) + '&limit=200';
+    laws = laws.concat(await getLaws(url));
+  }
+  lawNameMap = laws.reduce((acc, curr) => {
+    acc[curr.id] = curr.name;
+    return acc
+  }, {});
+  return lawNameMap;
+}
+
+function buildLawNames(laws, lawNameMap) {
+  result = '';
+  for (lawID of laws) {
+    result += `, ${lawNameMap[lawID]}`
+  }
+  if (result.length > 0) {
+    return result.substring(2);
   }
   return '';
 }
