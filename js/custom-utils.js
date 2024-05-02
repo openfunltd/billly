@@ -1,3 +1,65 @@
+function getStat() {
+  return new Promise((resolve, reject) => {
+    url = 'https://ly.govapi.tw/stat';
+    $.getJSON(url, function(data) {
+      resolve(data.bill.terms);
+    });
+  });
+}
+
+function getTerm(stat) {
+  const GET_term = document.location.search.match(/term=([0-9]*)/);
+  let term = (GET_term) ? GET_term[1] : '';
+  termStat = stat.filter((termStat) => termStat.term == term)[0];
+  if (term === '' || termStat === undefined) {
+    term = stat[0].term;
+  }
+  return term;
+}
+
+function getSessionPeriod(term, stat) {
+  const GET_sessionPeriod = document.location.search.match(/sessionPeriod=([0-9]*)/);
+  let sessionPeriod = (GET_sessionPeriod) ? GET_sessionPeriod[1] : '';
+  if (sessionPeriod === '') {
+    termStat = stat.filter((termStat) => termStat.term == term)[0];
+    sessionPeriod = termStat.sessionPeriod_count[0].sessionPeriod;
+  }
+  return sessionPeriod;
+}
+
+function renderTermOptions(stat, term) {
+  let termOptionsText = stat.reduce((acc, termStat) => {
+    theTerm = termStat.term;
+    if (theTerm != term) {
+      acc += ` <a href='.?term=${theTerm}'>第${theTerm}屆</a>`;
+    } else {
+      acc += ` <span>第${theTerm}屆</span>`
+    }
+    return acc;
+  }, '');
+  termOptionsText = '屆期:' + termOptionsText;
+  const termsP = document.getElementById("term");
+  termsP.innerHTML = termOptionsText
+  termsP.style.display = 'block';
+}
+
+function renderSessionPeriodOptions(stat, term, sessionPeriod) {
+  sessionPeriods = stat.filter((theTerm) => theTerm.term == term)[0].sessionPeriod_count;
+  let sessionPeriodOptionsText = sessionPeriods.reduce((acc, sessionPeriodStat) => {
+    theSessionPeriod = sessionPeriodStat.sessionPeriod;
+    if (theSessionPeriod != sessionPeriod) {
+      acc += ` <a href='.?term=${term}&sessionPeriod=${theSessionPeriod}'>第${theSessionPeriod}會期</a>`
+    } else {
+      acc += ` <span>第${theSessionPeriod}會期</span>`;
+    }
+    return acc;
+  }, '');
+  sessionPeriodOptionsText = '會期:' + sessionPeriodOptionsText;
+  const sessionPeriodP = document.getElementById("sessionPeriod");
+  sessionPeriodP.innerHTML = sessionPeriodOptionsText;
+  sessionPeriodP.style.display = 'block';
+}
+
 function getLawBills(term, sessionPeriod, proposal_type) {
   return new Promise((resolve, reject) => {
     const url = `https://ly.govapi.tw/bill/?term=${term}&sessionPeriod=${sessionPeriod}` +
@@ -53,6 +115,9 @@ async function getLawNameMap(bills) {
 }
 
 function buildLawNames(laws, lawNameMap) {
+  if (laws === undefined) {
+    return '';
+  }
   result = '';
   for (lawID of laws) {
     result += `, ${lawNameMap[lawID]}`
