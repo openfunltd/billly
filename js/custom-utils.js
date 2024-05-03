@@ -156,7 +156,7 @@ function parseBillName(billName) {
 }
 
 function getProposer(proposers, proposal_from) {
-  if (proposers != undefined) {
+  if (proposers != undefined && proposers.length > 0) {
     return proposers[0];
   }
   if (proposal_from != undefined) {
