@@ -4,14 +4,11 @@ async function main(tableId) {
   const stat = await getStat();
   term = getTerm(stat);
   sessionPeriod = getSessionPeriod(term, stat);
-  console.log(`target: 第${term}屆第${sessionPeriod}會期`);
 
   renderTermOptions(stat, term);
-  renderSessionPeriodOptions(stat, term, sessionPeriod);
+  renderSessionPeriodOptions(stat, term);
 
-  const bills_1 = await getLawBills(term, sessionPeriod, '委員提案');
-  const bills_2 = await getLawBills(term, sessionPeriod, '政府提案');
-  const bills = bills_1.concat(bills_2);
+  const bills = await getTermLawBills(term, stat);
   const lawNameMap = await getLawNameMap(bills);
   let rows = [];
 

@@ -60,6 +60,17 @@ function renderSessionPeriodOptions(stat, term, sessionPeriod) {
   sessionPeriodP.style.display = 'block';
 }
 
+async function getTermLawBills(term, stat) {
+  termData = stat.filter((termData) => termData.term == term)[0];
+  sessionPeriods = termData.sessionPeriod_count.map((sessionPeriodData) => sessionPeriodData.sessionPeriod);
+  bills = [];
+  for (sessionPeriod of sessionPeriods) {
+    bills = bills.concat(await getLawBills(term, sessionPeriod, '委員提案'));
+    bills = bills.concat(await getLawBills(term, sessionPeriod, '政府提案'));
+  }
+  return bills;
+}
+
 function getLawBills(term, sessionPeriod, proposal_type) {
   return new Promise((resolve, reject) => {
     const url = `https://ly.govapi.tw/bill/?term=${term}&sessionPeriod=${sessionPeriod}` +
