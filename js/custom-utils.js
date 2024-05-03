@@ -65,7 +65,7 @@ function getBills(term, sessionPeriod, proposal_type) {
   return new Promise((resolve, reject) => {
     const url = `https://ly.govapi.tw/bill/?term=${term}&sessionPeriod=${sessionPeriod}` +
       `&bill_type=法律案&bill_type=修憲案&proposal_type=${proposal_type}` +
-      "&limit=2000&field=提案人&field=對照表&field=laws";
+      "&limit=2000&field=提案人&field=對照表&field=laws&field=議案流程";
     $.getJSON(url, function(data) {
       resolve(data.bills);
     });
@@ -154,6 +154,18 @@ function parseBillName(billName) {
     billName = billName.substring(startIdx + 1, endIdx);
   }
   return billName;
+}
+
+function getInitialDate(bill) {
+  let initialDate = bill.mtime.substr(0, 10) + '*';
+  if (bill.議案流程 === undefined || bill.議案流程.length === 0) {
+    return initialDate;
+  }
+  dateArray = bill.議案流程[0].日期;
+  if (dateArray === undefined || dateArray.length === 0) {
+    return initialDate;
+  }
+  return dateArray[0];
 }
 
 function getProposer(proposers, proposal_from) {
