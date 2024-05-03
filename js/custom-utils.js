@@ -167,6 +167,25 @@ function getProposer(proposers, proposal_from) {
 
 function renderDataTable(rows) {
   const table = $('#data-table').DataTable({
+    initComplete: function () {
+      this.api()
+        .columns()
+        .every(function () {
+          let column = this;
+          if (this.index() === 0) {
+            return;
+          }
+          let title = this.footer().textContent;
+          let input = document.createElement('input');
+          input.placeholder = title;
+          column.footer().replaceChildren(input);
+          input.addEventListener('keyup', () => {
+            if (column.search() !== this.value) {
+              column.search(input.value).draw();
+            }
+          });
+        });
+    },
     keys: true,
     scrollX: true,
     columnDefs: [

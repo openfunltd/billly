@@ -9,3 +9,9 @@ div.filter_adjust {
 table.dataTable thead td {
   vertical-align: middle;
 }
+
+tfoot input {
+  width: 100%;
+  padding: 3px;
+  box-sizing: border-box;
+}
