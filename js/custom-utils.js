@@ -17,14 +17,10 @@ function getTerm(stat) {
   return term;
 }
 
-function getSessionPeriod(term, stat) {
-  const GET_sessionPeriod = document.location.search.match(/sessionPeriod=([0-9]*)/);
-  let sessionPeriod = (GET_sessionPeriod) ? GET_sessionPeriod[1] : '';
-  if (sessionPeriod === '') {
-    termStat = stat.filter((termStat) => termStat.term == term)[0];
-    sessionPeriod = termStat.sessionPeriod_count[0].sessionPeriod;
-  }
-  return sessionPeriod;
+function getSessionPeriods(stat, term) {
+  sessionPeriodData = stat.filter((theTerm) => theTerm.term == term)[0].sessionPeriod_count;
+  sessionPeriods = sessionPeriodData.map((data) => data.sessionPeriod);
+  return sessionPeriods;
 }
 
 function renderTermOptions(stat, term) {
@@ -43,15 +39,9 @@ function renderTermOptions(stat, term) {
   termsP.style.display = 'block';
 }
 
-function renderSessionPeriodOptions(stat, term, sessionPeriod) {
-  sessionPeriods = stat.filter((theTerm) => theTerm.term == term)[0].sessionPeriod_count;
-  let sessionPeriodOptionsText = sessionPeriods.reduce((acc, sessionPeriodStat) => {
-    theSessionPeriod = sessionPeriodStat.sessionPeriod;
-    if (theSessionPeriod != sessionPeriod) {
-      acc += ` <a href='.?term=${term}&sessionPeriod=${theSessionPeriod}'>第${theSessionPeriod}會期</a>`
-    } else {
-      acc += ` <span>第${theSessionPeriod}會期</span>`;
-    }
+function renderSessionPeriods(sessionPeriods) {
+  let sessionPeriodOptionsText = sessionPeriods.reduce((acc, sessionPeriod) => {
+    acc += ` <span id="sp-${sessionPeriod}">⚪</span><span>第${sessionPeriod}會期</span> `;
     return acc;
   }, '');
   sessionPeriodOptionsText = '會期:' + sessionPeriodOptionsText;
@@ -60,18 +50,18 @@ function renderSessionPeriodOptions(stat, term, sessionPeriod) {
   sessionPeriodP.style.display = 'block';
 }
 
-async function getTermLawBills(term, stat) {
-  termData = stat.filter((termData) => termData.term == term)[0];
-  sessionPeriods = termData.sessionPeriod_count.map((sessionPeriodData) => sessionPeriodData.sessionPeriod);
+async function getLawBills(term, sessionPeriod) {
+  console.log(term, sessionPeriod);
   bills = [];
-  for (sessionPeriod of sessionPeriods) {
-    bills = bills.concat(await getLawBills(term, sessionPeriod, '委員提案'));
-    bills = bills.concat(await getLawBills(term, sessionPeriod, '政府提案'));
-  }
+  const spLight = document.getElementById(`sp-${sessionPeriod}`);
+  spLight.innerText = '🟡';
+  bills = bills.concat(await getBills(term, sessionPeriod, '委員提案'));
+  bills = bills.concat(await getBills(term, sessionPeriod, '政府提案'));
+  spLight.innerText = '🟢';
   return bills;
 }
 
-function getLawBills(term, sessionPeriod, proposal_type) {
+function getBills(term, sessionPeriod, proposal_type) {
   return new Promise((resolve, reject) => {
     const url = `https://ly.govapi.tw/bill/?term=${term}&sessionPeriod=${sessionPeriod}` +
       `&bill_type=法律案&bill_type=修憲案&proposal_type=${proposal_type}` +
@@ -210,7 +200,5 @@ function renderDataTable(rows) {
     ],
     order: [2, 'desc'],
   });
-
-  table.rows.add(rows).draw(false);
-  table.columns.adjust().draw();
+  return table;
 }
